@@ -8,7 +8,7 @@
 [ディリクレ分布][Dirichlet]からのサンプリング。
 
 ### Categorical([p_1, p_2,...,p_n])
-[カテゴリカル分布][Categorical]
+[カテゴリカル分布][Categorical]からのサンプリング。
 
 ### Mixture
 カテゴリカル分布の[混合分布][Mixture]からのサンプリング。
