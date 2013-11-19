@@ -10,6 +10,7 @@ class Gamma
     @k  = _k.to_f
     @th = _th.to_f
   end
+  attr_reader :k, :th
 
   #### sample ####
   def sample
@@ -50,6 +51,7 @@ class Dirichlet
   def initialize(_al)
     @al = _al.clone
   end
+  attr_reader :al
 
   #### sample ####
   def sample
@@ -77,6 +79,7 @@ class Categorical
       @th.map!{|i| i / sum}
     end
   end
+  attr_reader :th
 
   #### sample ####
   def sample
@@ -101,14 +104,10 @@ end
 class Mixture
   #### new ####
   def initialize(_p, _c)
-    #### parameters ####
-    @p = _p.clone
-    @c = Array.new(_c.size){|i| _c[i].clone}
-
-    #### distributions ####
-    @cp = Categorical.new(@p)
-    @cc = Array.new(@c.size){|i| Categorical.new(@c[i]) }
+    @cp = Categorical.new(_p)
+    @cc = Array.new(_c.size){|i| Categorical.new(_c[i]) }
   end
+  attr_reader :cp, :cc
 
   #### sample ####
   def sample
@@ -131,17 +130,13 @@ end
 class MarkovChain
   #### new ####
   def initialize(_p, _c)
-    #### parameters ####
-    @p = _p.clone
-    @c = Array.new(_c){|i| _c[i].clone}
-
-    #### distributions ####
-    @cp = Categorical.new(@p)
-    @cc = Array.new(@c.size){|i| Categorical.new(@c[i]) }
+    @cp = Categorical.new(_p)
+    @cc = Array.new(_c.size){|i| Categorical.new(_c[i]) }
 
     #### previous state ####
     @s = -1
   end
+  attr_reader :cp, :cc, :s
 
   #### sample ####
   def sample
