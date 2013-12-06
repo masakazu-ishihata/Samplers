@@ -2,15 +2,22 @@
 # -*- coding: utf-8 -*-
 
 ########################################
+# Array
+########################################
+class Array
+  def sum; self.inject(0){|s, i| s+=i}; end
+end
+
+########################################
 # Gamma Distribution
 ########################################
 class Gamma
   #### new ####
+  attr_reader :k, :th
   def initialize(_k, _th)
     @k  = _k.to_f
     @th = _th.to_f
   end
-  attr_reader :k, :th
 
   #### sample ####
   def sample
@@ -38,9 +45,7 @@ class Gamma
   end
 
   #### show ####
-  def show
-    puts "#{@k}, #{@th}"
-  end
+  def show; puts "#{@k}, #{@th}"; end
 end
 
 ########################################
@@ -48,22 +53,21 @@ end
 ########################################
 class Dirichlet
   #### new ####
-  def initialize(_al)
-    @al = _al.clone
-  end
   attr_reader :al
+  def initialize(_al); @al = _al.clone; end
+  def Dirichlet.new_simple(_d, _al)
+    Dirichlet.new( Array.new(_d){|d| _al} )
+  end
 
   #### sample ####
   def sample
     th = Array.new(@al.size){|i| Gamma.new(@al[i], 1.0).sample}
-    sum = th.inject(:+)
+    sum = th.sum
     th.map!{|i| i / sum}
   end
 
   #### show ####
-  def show
-    puts "[#{@al.join(", ")}]"
-  end
+  def show; puts "[#{@al.join(", ")}]"; end
 end
 
 ########################################
@@ -71,15 +75,23 @@ end
 ########################################
 class Categorical
   #### new ####
+  attr_reader :th
   def initialize(_theta)
     @th = _theta.clone
-
-    #### 正規化 ####
-    if (sum = @th.inject(:+)) != 1.0
-      @th.map!{|i| i / sum}
-    end
+    normalize
   end
-  attr_reader :th
+  def Categorical.new_simple(_d, _al)
+    Categorical.new( Dirichlet.new_simple(_d, _al).sample )
+  end
+
+  #### normalize ####
+  def normalize
+    sum = @th.sum.to_f
+    @th.map!{|i| i / sum}
+  end
+
+  #### pof ####
+  def pof(_i); @th[_i]; end
 
   #### sample ####
   def sample
@@ -93,9 +105,7 @@ class Categorical
   end
 
   #### show ####
-  def show
-    puts "[#{@th.join(", ")}]"
-  end
+  def show; puts "[#{@th.join(", ")}]"; end
 end
 
 ########################################
@@ -103,17 +113,14 @@ end
 ########################################
 class Mixture
   #### new ####
+  attr_reader :cp, :cc
   def initialize(_p, _c)
     @cp = Categorical.new(_p)
     @cc = Array.new(_c.size){|i| Categorical.new(_c[i]) }
   end
-  attr_reader :cp, :cc
 
   #### sample ####
-  def sample
-    k = @cp.sample
-    @cc[k].sample
-  end
+  def sample; @cc[ @cp.sample ].sample; end
 
   #### show ####
   def show
@@ -129,30 +136,18 @@ end
 ########################################
 class MarkovChain
   #### new ####
+  attr_reader :cp, :cc, :s
   def initialize(_p, _c)
     @cp = Categorical.new(_p)
     @cc = Array.new(_c.size){|i| Categorical.new(_c[i]) }
-
-    #### previous state ####
-    @s = -1
+    @s  = -1 # previous state
   end
-  attr_reader :cp, :cc, :s
 
   #### sample ####
-  def sample
-    if @s < 0
-      t = @cp.sample
-    else
-      t = @cc[@s].sample
-    end
-    @s = t
-    t
-  end
+  def sample; @s = @s < 0 ? @cp.sample : @cc[@s].sample; end
 
   #### reset ####
-  def reset
-    @s = -1
-  end
+  def reset; @s = -1; end
 
   #### show ####
   def show
